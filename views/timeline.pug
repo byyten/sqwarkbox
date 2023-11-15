@@ -36,7 +36,6 @@ block content
                                         button#logout.logout(type="submit") 
                                             span.material-symbols-outlined(title="logout") logout 
 
-
                 .main(style="display:none") 
                     ul._profile 
                         li._profile 
@@ -59,12 +58,9 @@ block content
                                     span.material-symbols-outlined(title="delete your account and logout") backspace 
                                     //- span.label unregister
         
-                //- +account_badge(iam)
-                +new_message
-
                 .messagestream 
-                    .head 
-                        p messages ...
+                    .you #{"Messages"}
+                    +new_message
                     .stream
                         ul.stream
                             each message in messages 

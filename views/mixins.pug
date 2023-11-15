@@ -143,8 +143,8 @@ mixin new_article_comment(_id)
                     .material-symbols-outlined attach_file
                 input.attach(type="file" id="attach_" + _uuid name="attach") 
                 .comment.attachments
-            button.submit(id="commentOnArticle_" + _id + "_add_comment" type="submit") Chirp
-
+            button.submit(id="commentOnArticle_" + _id + "_add_comment" type="submit")
+                .material-symbols-outlined send
 mixin new_message
     .new_messages 
         label.new_message
