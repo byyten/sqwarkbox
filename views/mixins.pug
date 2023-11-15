@@ -1,0 +1,224 @@
+//- common shared
+//- mixin uuid 
+//-   let url = URL.createObjectURL(new Blob([])).split(":")[2]
+//-   if (url.indexOf("/") > -1) { 
+//-       return url.split("/")[3]
+//-   } else { 
+//-       return url.split(":")[2]
+//-   }
+mixin timestamps(ts)
+    span(style="font-size: 0.6rem;") #{new Date(ts).toString().slice(0, 21).replace(new Date(ts).getFullYear(), '@')}
+
+mixin vert 
+    .vert 
+
+mixin horiz 
+    .horiz
+
+//- timeline static (ish)
+mixin author_ident(author)
+    //- .horiz 
+    //-     img(src=author.avatar alt="Image of " + author.moniker title="Image of " + author.moniker)
+    .horiz.author_ident
+        button.author_ident(id="account_"+ author._id title="click to see timeline of " + author.moniker) #{author.moniker}
+
+mixin likes(payload, type)
+    .like
+        span.material-symbols-outlined(id=type + "_"+ payload._id) recommend
+        span.likes #{payload.likes} likes
+
+mixin report(type, _id)
+    span.material-symbols-outlined(id=type + "_"+ _id title="report a problem") 
+    .detail
+        form.new_article(method="post" action="")
+            input.author(type="hidden" name="author")
+            - var _uuid = URL.createObjectURL(new Blob([])).split(":")[2]
+
+mixin attachments(attached)
+        each attach in attached 
+            .attach_img 
+                a.attach_img(href=attach target="_blank")
+                    img.attachment(src=attach)
+
+mixin article_comment(comment)
+    .comment_article 
+        .commenter
+            //- ._id #{comment.article}
+            +author_ident(comment.author) 
+            //- .timestamp #{new Date(comment.timestamp).toLocaleDateString().slice(0,10)}
+            .timestamp 
+                +timestamps(comment.timestamp)
+        
+        .payload.comment #{comment.payload} 
+        .controls
+            .likes
+                +likes(comment, "comment")
+            .report 
+                +report("comment", comment._id)
+        .comment.attachments
+            if comment.attachments.length > 0
+                +attachments(comment.attachments)
+
+mixin posting(article, comments)
+    .article 
+        .article_head
+            .vert 
+                ._id #{article._id}
+                .subject.h1 #{article.subject} 
+                //- .timestamp #{new Date(article.timestamp).toLocaleDateString().slice(0,10)}
+                .timestamp 
+                    +timestamps(article.timestamp)
+            .author
+                +author_ident(article.author)
+        .payload #{article.payload} 
+        .horiz
+            .likes
+                 +likes(article, "article")
+            .add_comment
+                button.add_comment(title="Add your say") 
+                    span.material-symbols-outlined rate_review
+                .new_comment(style="display:none")
+                    +new_article_comment(article._id)
+            .report 
+                +report("article", article._id)
+                
+        .article.attachments 
+            +attachments(article.attachments)
+        .article_comments
+            if comments.length > 0
+                each comment in comments 
+                    +article_comment(comment) 
+            
+
+mixin timeline(articles, comments)
+    +new_article()
+    .clones(style="display:none;") 
+        - var article = { _id: "article_id", timestamp: "timestamp", author: "author_id", subject: "article_subject",payload: "article_payload", attachments: [], likes: 0 }
+        - var comment = { _id: "comment_id", timestamp: "timestamp", author: "author_id", article: "article_id", payload: "comment_payload", attachments: [], likes: 0 }
+        +posting(article, comment)
+        +article_comment(comment) 
+
+    .articles
+        if articles.length > 0
+            each article in articles 
+                - var articleComments = comments.filter(c => { return c.article === article._id })
+                +posting(article, articleComments)
+        
+            
+           
+//- interactive parts
+
+mixin new_article()
+    .article      
+        label
+            .horiz
+                .material-symbols-outlined.add_article(title="\n  submit a new article/post  \n   " ) note_add
+                span #{" + Posting / Article"}
+        form.form_new_article(method="post" action="" style="display:none")
+            input.author(type="hidden" name="author" value=iam._id)
+            - var _uuid = URL.createObjectURL(new Blob([])).split(":")[2]
+            .horiz
+                .vert
+                    label.lbl_subject(for="subject") subject
+                    input.subject(type="text" name="subject")
+                    label.lbl_payload(for="payload") make your case
+                    textarea.payload(type="text" name="payload" placeholder="your comments - be respectful")
+                label.lbl_attach(for="attach_" + _uuid title="attach images")
+                    .material-symbols-outlined attach_file
+                input.attach(id="attach_" + _uuid type="file" name="attach") 
+                .article.attachments
+            button.submit(id="article_" + iam._id type="submit") 
+                .material-symbols-outlined send
+mixin new_article_comment(_id)
+    .article_comment
+        form.new_comment(id="comment_" + _id method="post" action="" )
+            input.author(type="hidden" name="author" value=_id)
+            input.article(type="hidden" name="article" )
+            - var _uuid = URL.createObjectURL(new Blob([])).split(":")[2]
+            .horiz
+                .vert
+                    label.lbl_payload(for="payload") make your commentary
+                    textarea.payload(type="text" name="payload" placeholder="your comments - be respectful")
+                label.lbl_attach(for="attach_" + _uuid title="attach images")
+                    .material-symbols-outlined attach_file
+                input.attach(type="file" id="attach_" + _uuid name="attach") 
+                .comment.attachments
+            button.submit(id="commentOnArticle_" + _id + "_add_comment" type="submit") Chirp
+
+mixin new_message
+    .new_messages 
+        label.new_message
+            .horiz
+                .material-symbols-outlined.new_message(title="\n  send a new message  \n   ") chat_bubble
+                span #{" + Messages"}
+
+        form#form_message.form_message(method="" action="" style="display:none")
+            input.sender(type="hidden" name="sender" value=iam._id)
+            - var _uuid = URL.createObjectURL(new Blob([])).split(":")[2]
+            .horiz
+                .vert
+                    label.lbl_subject(for="subject") recipient
+                    input.subject(type="hidden" name="subject" value="friendship")
+                    select#recipient.recipient(name="recipient")
+                        option(value="-1") #{"choose a recipient ..."}
+                        each account in friends
+                            option(value=account._id data-fr="1") #{account.moniker} 
+                        each account in others 
+                            option(value=account._id data-fr="0") #{account.moniker}
+                        
+                    label.lbl_payload(for="payload") message
+                    textarea.payload(type="text" name="payload" placeholder="your message - be respectful")
+                label.lbl_attach(for="attach_" + _uuid title="attach images")
+                    .material-symbols-outlined attach_file
+                input.attach(id="attach_" + _uuid type="file" name="attach") 
+                .message.attachments
+            button.submit(id="message_" + iam._id type="submit") 
+                .material-symbols-outlined send
+    
+mixin account_badge(account)
+    .account_badge 
+        button.account_badge(id="account_" + account._id title="click to see timeline of " + account.moniker)
+            .horiz 
+                .avatar 
+                    img(src=account.avatar alt="image of " + account.moniker title="image of " + account.moniker )
+                .badge_moniker #{account.moniker} 
+            
+mixin message_to(message) 
+    li.stream.left
+        .speech_left.left
+            .payload_owner.left 
+                span.payload_owner #{message.recipient.moniker}
+                //- span.payload_time #{new Date(message.timestamp).toLocaleDateString()}
+                span.payload_time 
+                    +timestamps(message.timestamp)
+                
+            .payload_text
+                .textarea.payload(value=message.payload) #{message.payload}
+            .payload_attached
+                +attachments(message.attachments)
+
+mixin message_from(message) 
+    li.stream.right
+        //- .payload_owner.right 
+        //-     span.payload_owner #{message.sender.moniker}
+        //-     span.payload_time #{new Date(message.timestamp).toLocaleDateString()}
+        .speech_right.right
+            .payload_owner.right 
+                span.payload_owner #{message.sender.moniker}
+                //- span.payload_time #{new Date(message.timestamp).toLocaleDateString()}
+                span.payload_time 
+                    +timestamps(message.timestamp)
+            .payload_text
+                .textarea.payload(value=message.payload) #{message.payload}
+            .payload_attached
+                +attachments(message.attachments) 
+            
+            //- .payload_controls
+            //-     label.payload_img(for="payload_img")
+            //-         span.material-symbols-outlined image
+            //-     input#payload_img.payload_img(type="file")
+
+
+
+
+
