@@ -71,7 +71,7 @@ passport.deserializeUser(async (id, done) => {
   };
 });
 
-router.use(session({ secret: "dogs", resave: false, saveUninitialized: true, maxAge: Date.now() + (30 * 86400 * 1000)}));
+router.use(session({ secret: "sqwarkingmansoapbox", resave: false, saveUninitialized: true, maxAge: Date.now() + (30 * 86400 * 1000), httpOnly: false}));
 router.use(passport.initialize());
 router.use(passport.session());
 
@@ -80,7 +80,30 @@ router.use((req, res, next) => {
   next();
 })
 
+let sessions = []
 
+router.use((req, res, next) => {
+  try {
+    if (!sessions.includes(req.session.passport.user)) {
+      sessions.push(req.session.passport.user)
+    }
+    console.log(req.session)
+    console.log(sessions)  
+  } catch (err) {
+    console.log("not authenticated")
+  }  
+  next();
+})
+
+
+router.get("/api/v1/authed/:id", async (req, res) => {
+  if (sessions.includes(req.params.id)) {
+    console.log(req.params.id + " is authenticated")
+    res.json({ op: "check auth", status: 200, result: "ok"})
+  } else {
+    res.json({ op: "check auth", status: 403, result: "not authenticated"})
+  }
+})
 
 /* GET home page. */
 router.get('/', function(req, res, next) {

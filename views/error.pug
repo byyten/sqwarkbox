@@ -1,7 +1,10 @@
 extends layout
 
 block content
-  h1= message
-  h2= error.status
-  pre #{error.stack}
+  .error
+    h1 Sqwarkbox has had an unscheduled disassembly 
+    h5 (euphemisms are #[em]de rigeur#[em] these days)
+    h3= message
+    h4= error.status
+    pre #{error.stack}
   

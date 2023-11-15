@@ -3,14 +3,14 @@ extends layout
 block content 
     script. 
         function logmein(evt) {
-            document.forms[0].username.value = "anomizr"
-            document.forms[0].password.value = "gottahaveone"
+            document.forms[0].username.value = "Vivienne"
+            document.forms[0].password.value = "12"
             document.forms[0].querySelector("input[type='submit']").click()
         }
     .auth
         form#authenticate.authenticate(method="POST" action="")
             .formtitle 
-                h3 fake fake fake
+                h3 Sqwarkbox
             .formcontainer
                 .formsubtitle 
                     p Authenticate :: enter your moniker and password
